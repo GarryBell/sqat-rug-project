@@ -37,9 +37,31 @@ Bonus:
 
 alias SLOC = map[loc file, int sloc];
 
+
+
+/*
+* returns the number of commented lines in a file
+*/
+int commentedLines(str file){
+  str file2 = file;
+  int returnValue = 0;
+  while(findFirst(file2, "/*") != -1){
+    returnValue += (findFirst(file2, "*/") - findFirst(file2, "/*"));
+    file2 = replaceFirst(file2, "/*", "");
+    file2 = replaceFirst(file2, "*/", "");
+  } 
+  return returnValue;
+}
+
+
 SLOC sloc(loc project) {
   SLOC result = ();
   // implement here
   return result;
 }             
              
+int testE(int val) {
+  val += 1;
+  return val;
+}     
+            
