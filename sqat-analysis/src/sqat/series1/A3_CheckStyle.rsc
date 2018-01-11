@@ -2,6 +2,10 @@ module sqat::series1::A3_CheckStyle
 
 import Java17ish;
 import Message;
+import util::FileSystem;
+import ParseTree;
+import String;
+import List;
 
 /*
 
@@ -39,6 +43,8 @@ Tips
 Bonus:
 - write simple "refactorings" to fix one or more classes of violations 
 
+My checks are FileTabCharacter, LineLength and SingleSpaceSeparator
+
 */
 
 set[Message] checkStyle(loc project) {
@@ -48,4 +54,34 @@ set[Message] checkStyle(loc project) {
   // implement each check in a separate function called here. 
   
   return result;
+}
+
+bool checkTabs(str file){
+  list[str] splitFile = split("\t",file);
+  return size(splitFile) == 1;
+  
+}
+
+/*
+* For this one, a desision on what should be counted as a "long line"needs to be made. 
+* I decided on 120 characters, which is enough to just about fill the window on the eclipse IDE 
+* (results will differ for other people with different screen sizes).
+*/
+
+bool checkLength(str file){
+  list[str] splitFile = split("\n", file);
+  return size(max(splitFile)) < 120;
+}
+
+bool checkSpace(str file){
+  return indexOf("  ", file) == -1;
+}
+
+
+
+
+test bool testCheckSpace(){
+
+
+
 }

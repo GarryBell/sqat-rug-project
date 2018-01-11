@@ -42,26 +42,121 @@ alias SLOC = map[loc file, int sloc];
 /*
 * returns the number of commented lines in a file
 */
-int commentedLines(str file){
+int commentedSub(str file){
   str file2 = file;
   int returnValue = 0;
   while(findFirst(file2, "/*") != -1){
-    returnValue += (findFirst(file2, "*/") - findFirst(file2, "/*"));
+    returnValue += numberOfLines(substring(file2, findFirst(file2, "/*"), findFirst(file2, "*/")));
     file2 = replaceFirst(file2, "/*", "");
     file2 = replaceFirst(file2, "*/", "");
   } 
   return returnValue;
 }
 
+/*
+*takes a string, and returns how many \n's there are in it
+*/
+int numberOfLines(str file){
+  return size (findAll(file, "\n")); 
+}
+
+
+str testString = "
+  /*
+  *
+  *
+  
+  
+  
+  
+  
+  zc
+  */
+  das
+  asd
+  
+  asdsa
+  as
+  asd
+  "
+  ;
+  
+
+/*
+*Returns the number of empty lines in a file
+*/
+int emptyLines(str file){
+  list[str] file2 = split("\n", file);
+  splitFile = [trim(x) | x <- file2 ];
+  return size([ x | x <- splitFile, x == ""]);
+}
+
+
+list[str] emptyLines2(str file){
+  return [trim(x) | x <- split("\n", file)];
+}
+
+
+int fileLOC(str file){
+  return 1 + numberOfLines(file) - emptyLines(file) - commentedSub(file);
+}
 
 SLOC sloc(loc project) {
-  SLOC result = ();
-  // implement here
-  return result;
+  SLOC result = [];
+  list[loc] files = files(project);
+  return [fileLOC(readfile(x)) | x <- files];
 }             
              
-int testE(int val) {
-  val += 1;
-  return val;
-}     
-            
+/*
+* Tests
+*/
+
+test bool testComments(){
+  return commentedSub("
+  /*
+  *
+  *
+  
+  
+  
+  
+  
+  zc
+  */
+  das
+  asd
+  
+  asdsa
+  as
+  asd
+  ") == 9;
+}
+
+test bool empty(){
+  return (commentedSub("")== 0) && (fileLOC("") == 0) && (emptyLines("") == 1);
+}
+
+test bool emptyLinesTest(){
+  return emptyLines("
+  
+  
+  sdf
+  
+  dfs
+  fdsf
+  
+  
+  ") == 7;
+}
+int asd(){
+  return emptyLines("
+  
+  
+  sdf
+  
+  dfs
+  fdsf
+  
+  
+  ");
+}

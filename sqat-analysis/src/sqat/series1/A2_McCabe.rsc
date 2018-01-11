@@ -2,6 +2,7 @@ module sqat::series1::A2_McCabe
 
 import lang::java::jdt::m3::AST;
 import IO;
+import List;
 
 /*
 
@@ -39,18 +40,48 @@ set[Declaration] jpacmanASTs() = createAstsFromEclipseProject(|project://jpacman
 
 alias CC = rel[loc method, int cc];
 
+
+/*
+* Returns the complexity of a statement
+*/
+
+int complexity(Statement state){
+  int returnValue = 1;
+  visit(state){
+    case \while(_,_):          returnValue += 1;
+    case \for(_,_,_):          returnValue += 1;
+    case \for(_,_,_,_):        returnValue += 1;
+    case \foreach(_,_,_):      returnValue += 1;
+    case \do(_):               returnValue += 1;
+    case \do(_,_):             returnValue += 1;
+    case \if(_):               returnValue += 1;
+    case \if(_,_):             returnValue += 1;
+    case \try(_):              returnValue += 1;
+    case \catch(_):            returnValue += 1;
+    case \infix(_,_,_):        returnValue += 1;
+  }
+  return returnValue;
+}
 CC cc(set[Declaration] decls) {
   CC result = {};
-  
-  // to be done
-  
+  for(Declaration dec <- decls){
+  visit(dec){
+     case \method(_,_,_,_,m): result += {<m.src,complexity(m)>};
+    }
+  }
   return result;
 }
 
 alias CCDist = map[int cc, int freq];
 
 CCDist ccDist(CC cc) {
-  // to be done
+  list[int] comp =  [ x | <_,int x> <- cc];  int i = 0;
+  int length = max(comp);
+  list[int] freq = [0 | int y <- [0..length]];
+  for(int c <- comp) {
+    freq[c] += 1;
+  }
+  return [<x,y> | int x <- comp, int y <- freq];
 }
 
 
