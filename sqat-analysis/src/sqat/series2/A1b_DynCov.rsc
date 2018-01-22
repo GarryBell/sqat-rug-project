@@ -43,10 +43,20 @@ Tips:
 
 */
 
+loc project = |project://jpacman-instrumented/src/main/java/nl/tudelft/jpacman/Launcher.java|;
+  
 
+/*
+* Inserts the desired statement in front of each method in each class
+*/
 void methodCoverage(loc project) {
-  // to be done
+  list[Declarations] declarations = createAstsFromEclipseProject(project, true);
+  visit(declarations){
+    case (Block) `{<BlockStm* statements>}` : ;
+  }
 }
+
+
 
 void lineCoverage(loc project) {
   // to be done

@@ -1,7 +1,10 @@
 module sqat::series2::A1a_StatCov
-
+import String;
 import lang::java::jdt::m3::Core;
-
+import List;
+import Set;
+import IO;
+import util::Math;
 /*
 
 Implement static code coverage metrics by Alves & Visser 
@@ -42,8 +45,76 @@ Questions:
 - use a third-party coverage tool (e.g. Clover) to compare your results to (explain differences)
 
 
+Results:
+Total number of methods: 236
+Total number of tests: 44
+Total number of covered methods: 30
+Leading to a coverage of 13%
+
+This shows jpacman has grown, since at the time of the papers writing it had 181 methods
+
 */
+
+//Some structures
+alias CallGraph = rel[loc from, loc to];
+alias Declaration = tuple[loc name, loc src];
 
 
 M3 jpacmanM3() = createM3FromEclipseProject(|project://jpacman-framework|);
+
+
+/*
+* As shown in the paper, this returns a call graph from the project
+*/
+CallGraph callGraphBuild(M3 m){
+  CallGraph out = m.methodInvocation;
+  return out;
+}
+
+
+/*
+* All the non test methods
+*/
+list[Declaration] Methods(M3 m){
+  list[Declaration] out = [ d |  d <- m.declarations, isMethod(d.name), !contains(d.src.path, "/test/") ];
+  return out;
+}
+
+/*
+* All the test methods
+*/
+
+list[Declaration] Tests(M3 m){
+  list[Declaration] out = [ d |  d <- m.declarations, isMethod(d.name), contains(d.src.path, "/test/") ];
+  return out;
+}
+
+
+
+set[loc] Covered(M3 m){
+  list[Declaration] tests = Tests(m);
+  methodSet = toSet(Methods(m));
+  CallGraph graph = callGraphBuild(m);
+  list[loc] testLocs = [ x.name | Declaration x <- tests ]; 
+  set[loc] out = {};
+  for(loc l <- testLocs){
+    out += graph[l] & methodSet.name;
+  }
+  return out;
+}
+
+
+
+void output(M3 m){
+  print("Total number of methods: ");
+  println(size(Methods(m)));
+  print("Total number of tests: ");
+  println(size(Tests(m)));
+  print("Total number of covered methods: ");
+  println(size(toList(Covered(m))));
+  print("Leading to a coverage of ");
+  int percentage = percent(size(toList(Covered(m))), size(Methods(m)));
+  print(percentage);
+  println("%");
+}
 

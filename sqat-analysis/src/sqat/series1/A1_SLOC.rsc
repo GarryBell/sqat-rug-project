@@ -5,6 +5,7 @@ import ParseTree;
 import String;
 import util::FileSystem;
 import sqat::series1::Comments;
+import Set;
 
 /* 
 
@@ -18,10 +19,10 @@ Tips
 - use the functions in IO to read source files
 
 Answer the following questions:
-- what is the biggest file in JPacman?
-- what is the total size of JPacman?
-- is JPacman large according to SIG maintainability?
-- what is the ratio between actual code and test code size?
+- what is the biggest file in JPacman? Level.java, at 212 lines
+- what is the total size of JPacman? 2952 lines;
+- is JPacman large according to SIG maintainability?  At an average of 52 lines per main files, it is not too large
+- what is the ratio between actual code and test code size? Around 3.47 to one 
 
 Sanity checks:
 - write tests to ensure you are correctly skipping multi-line comments
@@ -37,7 +38,7 @@ Bonus:
 
 alias SLOC = map[loc file, int sloc];
 
-
+loc project = |project://jpacman-framework/src/main/java/nl/tudelft/jpacman/Launcher.java|;
 
 /*
 * returns the number of commented lines in a file
@@ -57,30 +58,9 @@ int commentedSub(str file){
 *takes a string, and returns how many \n's there are in it
 */
 int numberOfLines(str file){
-  return size (findAll(file, "\n")); 
+  return size (findAll(file, "\n"));
 }
 
-
-str testString = "
-  /*
-  *
-  *
-  
-  
-  
-  
-  
-  zc
-  */
-  das
-  asd
-  
-  asdsa
-  as
-  asd
-  "
-  ;
-  
 
 /*
 *Returns the number of empty lines in a file
@@ -102,9 +82,12 @@ int fileLOC(str file){
 }
 
 SLOC sloc(loc project) {
-  SLOC result = [];
-  list[loc] files = files(project);
-  return [fileLOC(readfile(x)) | x <- files];
+  SLOC result = ();
+  list[loc] files = toList(files(project));
+  for(file <- files){
+    result += (file:fileLOC(readFile(file)));
+  }
+  return result;
 }             
              
 /*
@@ -159,4 +142,34 @@ int asd(){
   
   
   ");
+}
+
+/*
+* SLOC of non test code
+*/
+SLOC Main(){
+  return sloc(|project://jpacman-framework/src/main/java/nl/tudelft/jpacman|);
+}
+
+
+/*
+* SLoc of test code
+*/
+SLOC Test(){
+  return sloc(|project://jpacman-framework/src/test/java/nl/tudelft/jpacman|);
+}
+
+
+/*
+* Sums all the loc ints in a SLOC
+*/
+int Size(SLOC project){
+  return sum([project[class] | class <- project]);
+}
+
+/*
+* The average size of a file
+*/
+int Average(SLOC project){
+  return sum([project[class] | class <- project])/size([x | x <- project]);
 }
