@@ -1,0 +1,7 @@
+nl.tudelft.jpacman.ui.BoardPanel must inherit JPanel
+nl.tudelft.jpacman.level.Level must invoke registerPlayer
+nl.tudelft.jpacman.npc.ghost.Clyde must inherit nl.tudelft.jpacman.npc.ghost.Ghost
+nl.tudelft.jpacman.ui.BoardPanel cannot inherit JPanel
+nl.tudelft.jpacman.level.Level cannot invoke registerPlayer
+nl.tudelft.jpacman.npc.ghost.Clyde cannot inherit nl.tudelft.jpacman.npc.ghost.Ghost
+

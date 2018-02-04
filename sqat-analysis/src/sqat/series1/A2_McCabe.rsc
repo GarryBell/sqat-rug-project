@@ -58,7 +58,8 @@ int complexity(Statement state){
     case \if(_,_,_):               returnValue += 1;
     case \try(_,_):              returnValue += 1;
     case \catch(_,_):            returnValue += 1;
-    case \infix(_,_,_):        returnValue += 1;
+    case \infix(_,"&&",_):        returnValue += 1;
+    case \infix(_,"||",_):        returnValue += 1;
   }
   return returnValue;
 }

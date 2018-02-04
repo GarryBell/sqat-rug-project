@@ -41,6 +41,15 @@ Tips
 
 Questions:
 - what methods are not covered at all?
+These methods are found through invocing Covered(jpacmanM3())-Methods(jpacmanM3()), and as a sample include:
+|java+method:///nl/tudelft/jpacman/Launcher/getSinglePlayer(nl.tudelft.jpacman.game.Game)|,
+  |java+method:///nl/tudelft/jpacman/level/Level/stopNPCs()|,
+  |java+method:///nl/tudelft/jpacman/Launcher/getBoardFactory()|,
+  |java+constructor:///nl/tudelft/jpacman/sprite/AnimatedSprite/AnimatedSprite(nl.tudelft.jpacman.sprite.Sprite%5B%5D,int,boolean)|,
+  |java+method:///nl/tudelft/jpacman/board/Board/getHeight()|,
+  |java+method:///nl/tudelft/jpacman/Launcher/getLevelMap()|,
+  |java+method:///nl/tudelft/jpacman/level/Level/start()|,
+  |java+method:///nl/tudelft/jpacman/level/Player/isAlive()|,
 - how do your results compare to the jpacman results in the paper? Has jpacman improved?
 - use a third-party coverage tool (e.g. Clover) to compare your results to (explain differences)
 
@@ -61,7 +70,11 @@ alias Declaration = tuple[loc name, loc src];
 
 
 M3 jpacmanM3() = createM3FromEclipseProject(|project://jpacman-framework|);
+M3 empty =  emptyM3(|project://jpacman-framework|); //An empty set, used for tests
 
+void main() {
+  output(jpacmanM3());
+}
 
 /*
 * As shown in the paper, this returns a call graph from the project
@@ -90,13 +103,16 @@ list[Declaration] Tests(M3 m){
 }
 
 
-
+/*
+* All the covered methods
+*/
 set[loc] Covered(M3 m){
   list[Declaration] tests = Tests(m);
   methodSet = toSet(Methods(m));
   CallGraph graph = callGraphBuild(m);
   list[loc] testLocs = [ x.name | Declaration x <- tests ]; 
   set[loc] out = {};
+  graph = graph+;
   for(loc l <- testLocs){
     out += graph[l] & methodSet.name;
   }
@@ -104,7 +120,9 @@ set[loc] Covered(M3 m){
 }
 
 
-
+/*
+* Prints off an overview of the coverage
+*/
 void output(M3 m){
   print("Total number of methods: ");
   println(size(Methods(m)));
@@ -116,5 +134,31 @@ void output(M3 m){
   int percentage = percent(size(toList(Covered(m))), size(Methods(m)));
   print(percentage);
   println("%");
+}
+
+
+test bool testMethods(){
+  return (size(Methods(jpacmanM3())) == 236);
+}
+
+
+test bool testEmptyMethods(){
+  return (size(Methods(empty)) == 0);
+}
+
+test bool testTests(){
+  return (size(Tests(jpacmanM3())) == 44);
+}
+
+test bool testEmptyTests(){
+  return (size(Tests(empty)) == 0);
+}
+
+test bool testCovered(){
+  return (size(Covered(jpacmanM3())) == 129);
+}
+
+test bool testEmptyCovered(){
+  return (size(Tests(empty)) == 0);
 }
 

@@ -45,11 +45,20 @@ Tips
 Bonus:
 - write simple "refactorings" to fix one or more classes of violations 
 
-My checks are FileTabCharacter, LineLength and SingleSpaceSeparator
+My checks are FileTabCharacter, LineLength and SingleSpaceSeparator, and a 4th check for whether methods are commented
 
 */
 
-loc project = |project://jpacman-framework|;
+
+void main(){
+  set[Message] messages = checkStyle(project);
+  for(m <- messages){
+    println(m);
+  }
+}
+
+
+loc project = |project://jpacman-framework/src/main/java/|;
 
 set[Message] checkStyle(loc project) {
   set[Message] result = {};
@@ -63,6 +72,9 @@ set[Message] checkStyle(loc project) {
     }
     if(!checkSpace(readFile(file))){
       result += warning("Double spacing in file",  file );
+    }
+    if(!commented(readFile(file))){
+      result += warning("Uncommented methods",  file );
     }
   }
   return result;
@@ -84,20 +96,151 @@ bool checkLength(str file){
   return size(max(splitFile)) < 120;
 }
 
-/*
-*
-*/
 
 bool checkSpace(str file){
   return findAll(file, "  ") == [];
 }
 
 
+/*
+* Tests if a method declaration is preceded by a comment, either single or multi line
+*/
+bool commented(str file){
+  list[str] trim = splitTrim(file);
+  list[bool] comments = commentIndex(trim);
+  for(x <- trim){
+    println(x);
+  }
+  for(x <- comments){
+    println(x);
+  }
+  for(f <- trim, contains(f, "{")){
+    if(!(contains(f, "//") ) && (!(getLoc(trim, f)-1 in index(comments)) || (comments[getLoc(trim, f)-1] == false ))){
+      return false;
+    }
+  }
+  return true;
+}
+
+/*
+* Splits the inputted file by line, then removes all lines that only consist of empty space, as well as trimming all lines
+*/
+list[str] splitTrim(str file){
+  list[str] result = split("\n", file);
+  list[str] result2 = [ trim(x) | x <- result];
+  list[str] result3 = [ x | x <- result2, size(x) != 0];
+  return result3;
+
+}
+
+/*
+* When given a file split into a list[str], with each line as one string , this returns a list[bool] of the same length as the list, with
+each bbol representing one line. If the value for a certain line is true, that line is part of a comment, if false, it is not a comment.
+*/
+list[bool] commentIndex(list[str] file){
+  list[bool] result = [false | x <- [1..size(file)+1]];
+  list[str] compareFile = file;
+  while(getLoc(compareFile, "/*") != -1){ //Multiple line comments
+    list[int] range = [getLoc(compareFile, "/*")..getLoc(compareFile, "*/")+1];
+    for(int i <- range){
+      result[i] = true;
+    }
+    if(getLoc(compareFile, "/*") != -1){
+      compareFile[getLoc(compareFile, "/*")] = "\n";
+    }
+   if(getLoc(compareFile, "/*") != -1){
+      compareFile[getLoc(compareFile, "/*")] = "\n";
+    }
+  }
+  while(getLoc(compareFile, "//") != -1){ //single line comments
+    result[getLoc(compareFile, "//")] = true;
+    print("loc:");
+    println(getLoc(compareFile, "//"));
+    compareFile[getLoc(compareFile, "//")] = "\n";
+  }
+  return result;
+}
+
+
+/*
+* When given a list[str] and a str, this returns the first time the str appears in the list.
+*/
+int getLoc(list[str] file, str ent){
+  for(x <- file){
+    if(contains(x, ent)){
+      return indexOf(file, x);
+    }
+    
+  }
+  return -1;
+}
+
+test bool commentMethod(){
+  return commented(" 
+ /*
+ *
+ */
+ 
+
+ fucntion(){
+ "
+  ) == true;
+}
+
+test bool singleCommentMethod(){
+  return commented(" 
+  asd
+  asd
+ //
+ 
+
+ function(){
+ "
+  ) == true;
+}
+
+test bool singleCommentOnSameLine(){
+  return commented(" 
+ 
+ 
+
+ fucntion(){ //
+ "
+  ) == true;
+}
+
+
+test bool uncommentedMethod(){
+  return commented(" 
+  
+  
+ function(){
+ 
+ 
+ "
+  ) == false;
+}
+
+test bool commentAfter(){
+  return commented(" 
+  
+  
+ function(){
+ 
+ 
+ /*
+ *
+ */
+ function2{
+ "
+  ) == false;
+}
 
 
 test bool testCheckSpace(){
   return checkSpace("assdasad  zsdzxczxc") == false;
 }
+
 
 
 test bool testCheckSpace2(){
